@@ -51,9 +51,8 @@ services:
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: >-
         postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "False"   # mejor en prod
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "False"
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
-      _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-fab"
     ports:
       - "8080:8080"
     volumes:
@@ -69,4 +68,4 @@ services:
 
 volumes:
   pgdata:
-    name: airflow_pgdata
+    name: pgdata

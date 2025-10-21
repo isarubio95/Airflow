@@ -38,9 +38,6 @@ Está diseñado para acercarse lo máximo posible a producción.
 git clone https://github.com/tu_usuario/tu_repo.git
 cd tu_repo
 
-# Crear archivo .env a partir del ejemplo
-cp .env.example .env
-
 # Inicializar Airflow y la base de datos
 docker compose up airflow-init
 
