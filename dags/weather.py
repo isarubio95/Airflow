@@ -48,6 +48,23 @@ def weather_forecast_full_pipeline():
         df.to_parquet(buf, index=False)
         parquet_bytes = buf.getvalue()
         return base64.b64encode(parquet_bytes).decode('utf-8')
+    
+    @task
+    def validate_bronze_data(encoded_data: str) -> str:
+        """Valida los datos extraídos antes de cargarlos a Bronze."""
+        print("Validando la calidad de los datos extraídos...")
+        data_bytes = base64.b64decode(encoded_data)
+        df = pd.read_parquet(io.BytesIO(data_bytes))
+        if df.empty:
+            raise ValueError("El DataFrame está vacío. No se recibieron datos de la API.")
+        temp_col = "temperature_2m"
+        if not df[temp_col].between(-90, 60).all():
+            raise ValueError(f"Se encontraron temperaturas fuera del rango lógico (-90 a 60°C).")
+        required_cols = ["time", "city"]
+        if df[required_cols].isnull().values.any():
+            raise ValueError(f"Se encontraron valores nulos en columnas críticas: {required_cols}.")
+        print("Validación de datos superada con éxito.")
+        return encoded_data
 
     @task
     def load_to_bronze(encoded_data: str, city_name: str) -> str:
@@ -127,16 +144,19 @@ def weather_forecast_full_pipeline():
         print(f"Subido a Gold: {gold_s3_uri}")
         return gold_s3_uri
 
-    # --- 2. NUEVO FLUJO CON TASKGROUP ---
     for city_name, city_params in CITIES.items():
-        # Crea un grupo de tareas para cada ciudad
         with TaskGroup(group_id=f"pipeline_for_{city_name}") as city_pipeline:
-            # Llama a cada tarea secuencialmente para la ciudad actual
-            extracted_payload = extract_open_meteo(city_params=city_params)
+            extracted_payload = extract_open_meteo(
+                city_params=city_params
+            )
             
             bronze_parquet_encoded = transform_to_bronze_parquet(
                 payload=extracted_payload, 
                 city_name=city_name
+            )
+
+            validated_data = validate_bronze_data(
+                encoded_data=bronze_parquet_encoded
             )
             
             bronze_uri = load_to_bronze(
@@ -153,7 +173,5 @@ def weather_forecast_full_pipeline():
                 silver_s3_uri=silver_uri, 
                 city_name=city_name
             )
-            # Airflow detecta automáticamente el orden de las dependencias
-            # (extract -> transform -> load -> etc.) dentro del grupo.
 
 weather_forecast_full_pipeline()
