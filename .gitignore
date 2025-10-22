@@ -1,1 +1,6 @@
 logs/
+dags/__pycache__/
+.vscode/
+data/
+plugins/
+.env

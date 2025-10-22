@@ -1,0 +1,15 @@
+VARIABLES
+weather_cities:
+  {
+    "logrono": {"lat": 42.466315, "lon": -2.439441},
+    "lardero": {"lat": 42.424, "lon": -2.462},
+    "villamediana_de_iregua": {"lat": 42.433, "lon": -2.418}
+  }
+
+CONEXIONES
+minio:
+  {
+    "aws_access_key_id": "minio",
+    "aws_secret_access_key": "***",
+    "endpoint_url": "http://minio:9000"
+  }
