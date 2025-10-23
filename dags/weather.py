@@ -119,7 +119,7 @@ def weather_forecast_full_pipeline():
     def create_gold_daily_summary(silver_s3_uri: str, city_name: str) -> str:
         from airflow.providers.amazon.aws.hooks.s3 import S3Hook
         hook = S3Hook(aws_conn_id='minio')
-        bucket_name = os.getenv("S3_BUCKET", "weather")
+        bucket_name = os.getenv("S3_BUCKET", "airflow-dags")
         silver_key = silver_s3_uri.replace(f"s3://{bucket_name}/", "")
         s3_object = hook.get_key(key=silver_key, bucket_name=bucket_name)
         file_bytes = s3_object.get()['Body'].read()
