@@ -8,14 +8,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT}"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_airflow:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d:ro
 
   # Inicialización de Airflow (una sola vez)
@@ -51,7 +51,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: >-
-        postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+        postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5439/${POSTGRES_DB}
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "False"
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       S3_BUCKET: ${S3_BUCKET}
@@ -67,11 +67,29 @@ services:
       airflow db check;
       airflow scheduler & airflow dag-processor & exec airflow api-server --port 8080
       "
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    env_file: .env
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Configurando MinIO...';
+      /usr/bin/mc alias set myminio http://minio:9001 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      echo 'Reseteando la configuración OpenID de MinIO...';
+      /usr/bin/mc admin config reset myminio identity_openid;
+      echo 'Creando el bucket S3 si no existe...';
+      /usr/bin/mc mb --ignore-existing myminio/${S3_BUCKET};
+      echo 'Inicialización de MinIO completada.';
+      "
+    restart: "no"
+
   minio:
     image: minio/minio:latest
-    container_name: minio
+    container_name: minio_airflow
     ports:
-      - "9000:9000"
+      - "9001:9001"
       - "9101:9101"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -81,5 +99,5 @@ services:
       - ./data:/data
 
 volumes:
-  pgdata:
-    name: pgdata
+  pgdata_airflow:
+    name: pgdata_airflow
