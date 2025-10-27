@@ -6,3 +6,4 @@ data/
 plugins/
 .env
 superset_home/
+patente_invenes.json
