@@ -38,7 +38,7 @@ services:
 
   airflow:
     image: apache/airflow:3.1.0-python3.11
-    container_name: dialnet-airflow-3-1
+    container_name: dialnet-airflow
     hostname: airflow
     depends_on:
       airflow-init:
@@ -71,7 +71,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: dialnet-minio-airflow
+    container_name: dialnet-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -89,7 +89,7 @@ services:
 
   minio-init:
     image: minio/mc
-    container_name: dialnet-minio
+    container_name: dialnet-init-minio
     depends_on:
       minio:
         condition: service_healthy
