@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: pg_airflow16
+    container_name: postgresql_airflow
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -15,20 +15,19 @@ services:
       timeout: 5s
       retries: 10
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_airflow:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d:ro
 
-  # Inicialización de Airflow (una sola vez)
   airflow-init:
     image: apache/airflow:3.1.0-python3.11
+    container_name: init_airflow
     depends_on:
       postgres:
         condition: service_healthy
     env_file: .env
     environment:
-      # Habilitar FAB y asegurar que el provider esté disponible
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
-      _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-fab"
+      _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-fab apache-airflow-providers-opensearch"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: >-
         postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     volumes:
@@ -54,12 +53,14 @@ services:
         postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "False"
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      AIRFLOW_CONN_OPENSEARCH_DEFAULT: "opensearch://${OPENSEARCH_USER}:${OPENSEARCH_PASS}@${OPENSEARCH_HOST}:${OPENSEARCH_PORT}?use_ssl=true&verify_certs=false"
+      _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-opensearch"
       S3_BUCKET: ${S3_BUCKET}
     ports:
       - "8080:8080"
     volumes:
       - ./dags:/opt/airflow/dags
-      - ./logs:/opt/airflow/logs
+      - logs_airflow:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
     command: >
       bash -eo pipefail -lc "
@@ -67,19 +68,47 @@ services:
       airflow db check;
       airflow scheduler & airflow dag-processor & exec airflow api-server --port 8080
       "
+
   minio:
     image: minio/minio:latest
-    container_name: minio
-    ports:
-      - "9000:9000"
-      - "9101:9101"
+    container_name: minio_airflow
+    command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command: server /data --console-address ":9101"
+    ports:
+      - "9001:9000"  
+      - "9002:9001"  
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     volumes:
       - ./data:/data
 
+  minio-init:
+    image: minio/mc
+    container_name: init_minio_airflow
+    depends_on:
+      minio:
+        condition: service_healthy
+    env_file: .env
+    entrypoint: >
+      /bin/sh -euo pipefail -c '
+      echo "Configurando MinIO...";
+      /usr/bin/mc alias rm myminio >/dev/null 2>&1 || true;
+      /usr/bin/mc alias set myminio http://minio:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}";
+      /usr/bin/mc admin info myminio;
+      echo "Reseteando OpenID (opcional)...";
+      /usr/bin/mc admin config reset myminio identity_openid || true;
+      echo "Creando bucket ${S3_BUCKET} si no existe...";
+      /usr/bin/mc mb --ignore-existing myminio/"${S3_BUCKET}";
+      echo "Inicialización de MinIO completada.";
+      '
+    restart: "no"
+
 volumes:
-  pgdata:
-    name: pgdata
+  pgdata_airflow:
+    name: pgdata_airflow
+  logs_airflow: {}
