@@ -19,6 +19,8 @@ HOURLY = [
     "precipitation", "rain", "snowfall", "cloud_cover",
     "windspeed_10m", "winddirection_10m", "surface_pressure"
 ]
+BUCKET = "weather"
+
 default_args = { "retries": 10, "retry_delay": timedelta(seconds=15) }
 
 @dag(
@@ -39,7 +41,6 @@ def weather_forecast_full_pipeline():
         r.raise_for_status()
         return r.json()
 
-
     @task
     def transform_to_bronze_parquet(payload: dict, city_name: str) -> str:
         hourly = payload.get("hourly", {})
@@ -53,10 +54,8 @@ def weather_forecast_full_pipeline():
         parquet_bytes = buf.getvalue()
         return base64.b64encode(parquet_bytes).decode('utf-8')
     
-
     @task
     def validate_bronze_data(encoded_data: str) -> str:
-        """Valida los datos extraídos antes de cargarlos a Bronze."""
         print("Validando la calidad de los datos extraídos...")
         data_bytes = base64.b64decode(encoded_data)
         df = pd.read_parquet(io.BytesIO(data_bytes))
@@ -64,13 +63,12 @@ def weather_forecast_full_pipeline():
             raise ValueError("El DataFrame está vacío. No se recibieron datos de la API.")
         temp_col = "temperature_2m"
         if not df[temp_col].between(-90, 60).all():
-            raise ValueError(f"Se encontraron temperaturas fuera del rango lógico (-90 a 60°C).")
+            raise ValueError("Se encontraron temperaturas fuera del rango lógico (-90 a 60°C).")
         required_cols = ["time", "city"]
         if df[required_cols].isnull().values.any():
             raise ValueError(f"Se encontraron valores nulos en columnas críticas: {required_cols}.")
         print("Validación de datos superada con éxito.")
         return encoded_data
-
 
     @task
     def load_to_bronze(encoded_data: str, city_name: str) -> str:
@@ -78,19 +76,24 @@ def weather_forecast_full_pipeline():
         data_bytes = base64.b64decode(encoded_data)
         ctx = get_current_context()
         logical_date = ctx["data_interval_start"].to_date_string()
-        bucket_name = os.getenv("S3_BUCKET", "weather")
-        hook = S3Hook(aws_conn_id='minio')
+        s3 = S3Hook(aws_conn_id='minio')
+
+        # Asegurar bucket
+        if not s3.check_for_bucket(bucket_name=BUCKET):
+            print(f"[MinIO] Bucket '{BUCKET}' no existe. Creándolo...")
+            s3.create_bucket(bucket_name=BUCKET)
+
         daily_prefix = f"bronze/weather/city={city_name}/date={logical_date}/"
-        keys_to_delete = hook.list_keys(bucket_name=bucket_name, prefix=daily_prefix)
+        keys_to_delete = s3.list_keys(bucket_name=BUCKET, prefix=daily_prefix)
         if keys_to_delete:
             print(f"Limpiando {len(keys_to_delete)} archivo(s) antiguo(s) de Bronze en: {daily_prefix}")
-            hook.delete_objects(bucket=bucket_name, keys=keys_to_delete)
+            s3.delete_objects(bucket=BUCKET, keys=keys_to_delete)
+
         key = f"{daily_prefix}{ctx['run_id']}.parquet"
-        hook.load_bytes(data_bytes, key, bucket_name=bucket_name, replace=True)
-        s3_uri = f"s3://{bucket_name}/{key}"
+        s3.load_bytes(data_bytes, key, bucket_name=BUCKET, replace=True)
+        s3_uri = f"s3://{BUCKET}/{key}"
         print(f"Subido a Bronze: {s3_uri}")
         return s3_uri
-
 
     @task
     def transform_load_silver_and_index(bronze_s3_uri: str, city_name: str) -> str:
@@ -98,20 +101,19 @@ def weather_forecast_full_pipeline():
         from urllib.parse import urlparse
         from airflow.sdk import get_current_context
         import pandas as pd
-        import io, os
+        import io
 
         s3 = S3Hook(aws_conn_id='minio')
-        BUCKET = os.getenv("S3_BUCKET", "weather")
 
+        # Leer Bronze
         u = urlparse(bronze_s3_uri)
         bronze_bucket = u.netloc
         bronze_key = u.path.lstrip('/')
-
         obj = s3.get_key(key=bronze_key, bucket_name=bronze_bucket)
         file_bytes = obj.get()['Body'].read()
         bronze_df = pd.read_parquet(io.BytesIO(file_bytes))
 
-        # --- Transformación → Silver ---
+        # Transformación → Silver
         silver_df = bronze_df.copy()
         silver_df.rename(columns={
             "temperature_2m": "temperature_celsius",
@@ -126,9 +128,13 @@ def weather_forecast_full_pipeline():
             "wind_chill","humidity_percent","wind_speed_kmh","precipitation"
         ]]
 
-        # --- Persistir Silver en S3 ---
+        # Persistir Silver (asegurar bucket)
         ctx = get_current_context()
         logical_date = ctx["data_interval_start"].to_date_string()
+        if not s3.check_for_bucket(bucket_name=BUCKET):
+            print(f"[MinIO] Bucket '{BUCKET}' no existe. Creándolo...")
+            s3.create_bucket(bucket_name=BUCKET)
+
         silver_daily_prefix = f"silver/weather/city={city_name}/date={logical_date}/"
         old = s3.list_keys(bucket_name=BUCKET, prefix=silver_daily_prefix)
         if old:
@@ -141,7 +147,7 @@ def weather_forecast_full_pipeline():
         silver_s3_uri = f"s3://{BUCKET}/{silver_key}"
         print(f"[Silver] Subido: {silver_s3_uri}")
 
-        # --- Cliente OpenSearch desde Connection de Airflow ---
+        # OpenSearch (igual que ya tenías)
         def _as_bool(v, default=False):
             if isinstance(v, bool):
                 return v
@@ -158,12 +164,12 @@ def weather_forecast_full_pipeline():
 
         use_ssl = _as_bool(extra.get("use_ssl", True))
         verify_certs = _as_bool(extra.get("verify_certs", False))
-        ca_certs = extra.get("ca_certs")  # ruta al CA si verify_certs=True
+        ca_certs = extra.get("ca_certs")
         scheme = "https" if use_ssl else "http"
 
         client = OpenSearch(
             hosts=[{"host": host, "port": port, "scheme": scheme}],
-            http_auth=(user, pwd) if user else None,   # usa basic_auth si tu lib es opensearch-py >=2.5
+            http_auth=(user, pwd) if user else None,
             use_ssl=use_ssl,
             verify_certs=verify_certs,
             ca_certs=ca_certs,
@@ -173,7 +179,6 @@ def weather_forecast_full_pipeline():
         )
 
         index_name = "weather_silver_hourly"
-
         if not client.indices.exists(index=index_name):
             client.indices.create(
                 index=index_name,
@@ -194,7 +199,6 @@ def weather_forecast_full_pipeline():
                 },
             )
 
-        # --- Bulk idempotente ---
         actions = []
         for row in silver_df.itertuples(index=False):
             ts = pd.to_datetime(row.time).to_pydatetime()
@@ -220,17 +224,22 @@ def weather_forecast_full_pipeline():
 
         return silver_s3_uri
 
-
     @task
     def create_gold_daily_summary(silver_s3_uri: str, city_name: str) -> str:
         from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-        hook = S3Hook(aws_conn_id='minio')
-        bucket_name = os.getenv("S3_BUCKET", "airflow-dags")
-        silver_key = silver_s3_uri.replace(f"s3://{bucket_name}/", "")
-        s3_object = hook.get_key(key=silver_key, bucket_name=bucket_name)
+        s3 = S3Hook(aws_conn_id='minio')
+
+        # Asegurar bucket
+        if not s3.check_for_bucket(bucket_name=BUCKET):
+            print(f"[MinIO] Bucket '{BUCKET}' no existe. Creándolo...")
+            s3.create_bucket(bucket_name=BUCKET)
+
+        silver_key = silver_s3_uri.replace(f"s3://{BUCKET}/", "")
+        s3_object = s3.get_key(key=silver_key, bucket_name=BUCKET)
         file_bytes = s3_object.get()['Body'].read()
         silver_df = pd.read_parquet(io.BytesIO(file_bytes))
         silver_df.set_index('time', inplace=True)
+
         daily_summary = silver_df.resample('D').agg(
             temp_max=('temperature_celsius', 'max'),
             temp_min=('temperature_celsius', 'min'),
@@ -240,45 +249,24 @@ def weather_forecast_full_pipeline():
         )
         daily_summary.reset_index(inplace=True)
         daily_summary["city"] = city_name
+
         ctx = get_current_context()
         logical_date = ctx["data_interval_start"].to_date_string()
         gold_key = f"gold/daily_summary/city={city_name}/date={logical_date}.parquet"
         buf = io.BytesIO()
         daily_summary.to_parquet(buf, index=False)
-        hook.load_bytes(buf.getvalue(), gold_key, bucket_name=bucket_name, replace=True)
-        gold_s3_uri = f"s3://{bucket_name}/{gold_key}"
+        s3.load_bytes(buf.getvalue(), gold_key, bucket_name=BUCKET, replace=True)
+        gold_s3_uri = f"s3://{BUCKET}/{gold_key}"
         print(f"Subido a Gold: {gold_s3_uri}")
         return gold_s3_uri
 
-
     for city_name, city_params in CITIES.items():
         with TaskGroup(group_id=f"pipeline_for_{city_name}") as city_pipeline:
-            extracted_payload = extract_open_meteo(
-                city_params=city_params
-            )
-            
-            bronze_parquet_encoded = transform_to_bronze_parquet(
-                payload=extracted_payload, 
-                city_name=city_name
-            )
-
-            validated_data = validate_bronze_data(
-                encoded_data=bronze_parquet_encoded
-            )
-            
-            bronze_uri = load_to_bronze(
-                encoded_data=validated_data,
-                city_name=city_name
-            )
-            
-            silver_uri = transform_load_silver_and_index(
-                bronze_s3_uri=bronze_uri, 
-                city_name=city_name
-            )
-   
-            create_gold_daily_summary(
-                silver_s3_uri=silver_uri, 
-                city_name=city_name
-            )
+            extracted_payload = extract_open_meteo(city_params=city_params)
+            bronze_parquet_encoded = transform_to_bronze_parquet(payload=extracted_payload, city_name=city_name)
+            validated_data = validate_bronze_data(encoded_data=bronze_parquet_encoded)
+            bronze_uri = load_to_bronze(encoded_data=validated_data, city_name=city_name)
+            silver_uri = transform_load_silver_and_index(bronze_s3_uri=bronze_uri, city_name=city_name)
+            create_gold_daily_summary(silver_s3_uri=silver_uri, city_name=city_name)
 
 weather_forecast_full_pipeline()
