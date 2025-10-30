@@ -1,0 +1,368 @@
+[
+    {
+        "_id": "P9701774",
+        "fechaCrea": {
+            "$date": "2021-07-15T12:38:57.204Z"
+        },
+        "fechaModi": {
+            "$date": "2025-08-30T00:06:51.756Z"
+        },
+        "patente": {
+            "images": [
+                "https://consultas2.oepm.es/imas/patentes/1997/P9701774.pdf"
+            ],
+            "pdfs": [
+                "https://consultas2.oepm.es/pdf/ES/0000/000/02/13/47/ES-2134734_B1.pdf",
+                "https://consultas2.oepm.es/pdf/ES/0000/000/02/13/47/ES-2134734_A1.pdf"
+            ],
+            "referencia": {
+                "adiciones": {
+                    "adicion": {
+                        "fspo": null,
+                        "nspo": null
+                    }
+                },
+                "base": "INTERPAT",
+                "certificados": null,
+                "citaciones": {
+                    "citacion": [
+                        {
+                            "categoria": "X",
+                            "numero": "GB2001237",
+                            "tipo": "A"
+                        },
+                        {
+                            "categoria": "X",
+                            "numero": "ES0279613",
+                            "pdf": "/ES/0000/000/00/27/96/ES-0279613_U.pdf",
+                            "tipo": "U"
+                        }
+                    ]
+                },
+                "clasificaciones": {
+                    "claint": {
+                        "clai": {
+                            "item": [
+                                {
+                                    "clasificacion": "A41D27/20",
+                                    "fecha": "(2006.01)"
+                                }
+                            ]
+                        }
+                    },
+                    "cpcagrupada": null
+                },
+                "divisionales": {
+                    "divisional": {
+                        "fdiv": null,
+                        "ndiv": null
+                    }
+                },
+                "domi": "PATL1986",
+                "fto4": null,
+                "imgresu": "/Resumen/000/000/0P9/701/P9701774.jpg",
+                "inventores": {
+                    "inventor": [
+                        {
+                            "drin": null,
+                            "inve": "ROMERO VAZQUEZ, JUAN JOSE",
+                            "nain": "ES",
+                            "orden": "1",
+                            "prin": null
+                        }
+                    ]
+                },
+                "mencionesibi": null,
+                "miniaturas": null,
+                "oponentes": null,
+                "prioridades": null,
+                "publicaciones": {
+                    "otras": {
+                        "publicacion": [
+                            {
+                                "fcon": "(15.03.2000)",
+                                "fpub": "(01.05.2000)",
+                                "npub": "2134734",
+                                "pais": "ES",
+                                "pdf": "/ES/0000/000/02/13/47/ES-2134734_B1.pdf",
+                                "tipo": "B1"
+                            }
+                        ]
+                    },
+                    "primera": {
+                        "publicacion": {
+                            "fcon": null,
+                            "fpub": "(01.10.1999)",
+                            "npub": "2134734",
+                            "pais": "ES",
+                            "pdf": "/ES/0000/000/02/13/47/ES-2134734_A1.pdf",
+                            "tipo": "A1"
+                        }
+                    }
+                },
+                "refe": "P9701774",
+                "solicitantes": {
+                    "solicitante": [
+                        {
+                            "dire": "CORREDERA, 6,AROCHE 21240 HUELVA",
+                            "nare": "ES",
+                            "orden": "1",
+                            "prov": "21",
+                            "soli": "ROMERO VAZQUEZ,JUAN JOSE"
+                        }
+                    ]
+                },
+                "solicitudes": {
+                    "solicitud": [
+                        {
+                            "fsol": "(08.08.1997)",
+                            "nsol": "P9701774"
+                        }
+                    ]
+                },
+                "tieneimg": "X",
+                "tienepdf": "X",
+                "tieneresu": "X",
+                "titu": {
+                    "titu_en": "Removable patch pocket on fabric garments",
+                    "titu_es": "BOLSILLO DESMONTABLE DE PARCHE EN PRENDAS DE VESTIR DE TELA."
+                },
+                "trad_auto_resu": "N",
+                "trad_auto_titu": "N"
+            },
+            "resumen": "Bolsillo desmontable de parche en prendas de vestir de tela. Para dar solución a las distintas necesidades de transporte  en la prenda, se usa un bolsillo de dos piezas de tela cosidas entre sí por la periferia, con boca o entrada, se une a la prenda mediante botones, broches, cremalleras o velcro (M.R.: ganchitos y lana de poliamida), o bien, una combinación de estos.elementos. Como solución más idónea en pantalón, el pernil tiene cosida una pieza lateral en forma de escuadra con ojales, con lado horizontal superior y vertical inferior delantero, siendo el cosido sólo por la zona periférico superior y vertical delantera; el bolsillo se acopla con botones y en la zona opuesta a la escuadra se une con un broche."
+        },
+        "version": 0
+    },
+    {
+        "_id": "P9401667",
+        "fechaCrea": {
+            "$date": "2021-07-15T12:39:02.278Z"
+        },
+        "fechaModi": {
+            "$date": "2025-08-30T00:01:46.347Z"
+        },
+        "patente": {
+            "images": [
+                "https://consultas2.oepm.es/imas/patentes/1994/P9401667.pdf"
+            ],
+            "pdfs": [
+                "https://consultas2.oepm.es/pdf/ES/0000/000/02/11/61/ES-2116161_A1.pdf",
+                "https://consultas2.oepm.es/pdf/ES/0000/000/02/11/61/ES-2116161_B1.pdf"
+            ],
+            "referencia": {
+                "adiciones": {
+                    "adicion": {
+                        "fspo": null,
+                        "nspo": null
+                    }
+                },
+                "base": "INTERPAT",
+                "certificados": null,
+                "citaciones": {
+                    "citacion": [
+                        {
+                            "categoria": "A",
+                            "numero": "ES0244519",
+                            "pdf": "/ES/0000/000/00/24/45/ES-0244519_U.pdf",
+                            "tipo": "U"
+                        },
+                        {
+                            "categoria": "A",
+                            "numero": "FR2600295",
+                            "tipo": "A3"
+                        },
+                        {
+                            "categoria": "A",
+                            "numero": "EP0228313",
+                            "tipo": "A1"
+                        },
+                        {
+                            "categoria": "A",
+                            "numero": "FR2605272",
+                            "tipo": "A3"
+                        },
+                        {
+                            "categoria": "A",
+                            "numero": "FR2682341",
+                            "tipo": "A1"
+                        },
+                        {
+                            "categoria": "A",
+                            "numero": "US3421175",
+                            "tipo": "A"
+                        }
+                    ]
+                },
+                "clasificaciones": {
+                    "claint": {
+                        "clai": {
+                            "item": [
+                                {
+                                    "clasificacion": "B60S1/38",
+                                    "fecha": "(2006.01)"
+                                }
+                            ]
+                        }
+                    },
+                    "cpc": {
+                        "cpci": {
+                            "item": [
+                                {
+                                    "clasificacioncpc": "B60S1/38",
+                                    "fecha": null,
+                                    "oficinageneradora": "EP"
+                                }
+                            ]
+                        },
+                        "cpcn": {
+                            "item": [
+                                {
+                                    "clasificacioncpc": "B60S2001/3822",
+                                    "fecha": null,
+                                    "oficinageneradora": "EP"
+                                }
+                            ]
+                        }
+                    },
+                    "cpcagrupada": {
+                        "cpci": {
+                            "item": [
+                                {
+                                    "clasificacioncpc": "B60S1/38",
+                                    "oficinageneradora": "EP"
+                                }
+                            ]
+                        },
+                        "cpcn": {
+                            "item": [
+                                {
+                                    "clasificacioncpc": "B60S2001/3822",
+                                    "oficinageneradora": "EP"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "divisionales": {
+                    "divisional": {
+                        "fdiv": null,
+                        "ndiv": null
+                    }
+                },
+                "domi": "PATL1986",
+                "fto4": null,
+                "imgresu": "/Resumen/000/000/0P9/401/P9401667.jpg",
+                "inventores": {
+                    "inventor": [
+                        {
+                            "drin": null,
+                            "inve": "CRAMER, HANS-DIETER",
+                            "nain": "DE",
+                            "orden": "1",
+                            "prin": null
+                        },
+                        {
+                            "drin": null,
+                            "inve": "BURKARD, HERMANN",
+                            "nain": "DE",
+                            "orden": "2",
+                            "prin": null
+                        },
+                        {
+                            "drin": null,
+                            "inve": "LEUTSCH, RAINER",
+                            "nain": "DE",
+                            "orden": "3",
+                            "prin": null
+                        },
+                        {
+                            "drin": null,
+                            "inve": "LEUTSCH, WOLFGANG",
+                            "nain": "DE",
+                            "orden": "4",
+                            "prin": null
+                        },
+                        {
+                            "drin": null,
+                            "inve": "SCHAECK, MARTIN",
+                            "nain": "DE",
+                            "orden": "5",
+                            "prin": null
+                        },
+                        {
+                            "drin": null,
+                            "inve": "GEISSLER, SASCHA",
+                            "nain": "DE",
+                            "orden": "6",
+                            "prin": null
+                        }
+                    ]
+                },
+                "mencionesibi": null,
+                "miniaturas": null,
+                "oponentes": null,
+                "prioridades": {
+                    "prioridad": [
+                        "DE19934325601 (30.07.1993)"
+                    ]
+                },
+                "publicaciones": {
+                    "otras": {
+                        "publicacion": [
+                            {
+                                "fcon": "(17.12.1998)",
+                                "fpub": "(01.02.1999)",
+                                "npub": "2116161",
+                                "pais": "ES",
+                                "pdf": "/ES/0000/000/02/11/61/ES-2116161_B1.pdf",
+                                "tipo": "B1"
+                            }
+                        ]
+                    },
+                    "primera": {
+                        "publicacion": {
+                            "fcon": null,
+                            "fpub": "(01.07.1998)",
+                            "npub": "2116161",
+                            "pais": "ES",
+                            "pdf": "/ES/0000/000/02/11/61/ES-2116161_A1.pdf",
+                            "tipo": "A1"
+                        }
+                    }
+                },
+                "refe": "P9401667",
+                "solicitantes": {
+                    "solicitante": [
+                        {
+                            "dire": "WERNERSTRASSE 1 D-70469 STUTTGART",
+                            "nare": "DE",
+                            "orden": "1",
+                            "prov": null,
+                            "soli": "ROBERT BOSCH GMBH"
+                        }
+                    ]
+                },
+                "solicitudes": {
+                    "solicitud": [
+                        {
+                            "fsol": "(28.07.1994)",
+                            "nsol": "P9401667"
+                        }
+                    ]
+                },
+                "tieneimg": "X",
+                "tienepdf": "X",
+                "tieneresu": "X",
+                "titu": {
+                    "titu_en": "Wiper blade with a multi-section supporting frame",
+                    "titu_es": "ESCOBILLA DE LIMPIAPARABRISAS CON UN BASTIDOR PORTANTE DE VARIOS ELEMENTOS."
+                },
+                "trad_auto_resu": "N",
+                "trad_auto_titu": "N"
+            },
+            "resumen": "ESCOBILLA DE LIMPIAPARABRISAS CON UN BASTIDOR PORTANTE DE VARIOS ELEMENTOS QUE SIRVE PARA LIMPIAR PARABRISAS EN VEHICULOS MOTORIZADOS. LA ESCOBILLA COMPRENDE UN BASTIDOR PORTANTE DE VARIOS ELEMENTOS AL QUE ESTA ARTICULADO UN BRAZO DE ESCOBILLA ACCIONADO Y QUE CON PARES DE GARRAS DISPUESTOS UNOS TRAS OTROS EN PARTES DEL BASTIDOR AGARRAN A UNA REGLETA DORSAL DE UNA REGLETA LIMPIADORA ALARGADA QUE ES DE UN MATERIAL SINTETICO, ARRIMADA CON UNA FALDILLA LIMPIADORA AL CRISTAL A LIMPIAR, ENGRANANDO LAS GARRAS DE CADA UNO DE LOS PARES DE GARRAS EN RANURAS LONGITUDINALES SITUADAS UNA FRENTE A OTRA, DISPUESTAS EN LOS LADOS LONGITUDINALES DE LA REGLETA DORSAL, Y ESTANDO DISPUESTO EN LA REGLETA DORSAL UN ESCOTE LONGITUDINAL PARA EL ALOJAMIENTO DE UNA TIRA DE REFUERZO ELASTICA CUYA LONGITUD CORRESPONDE APROXIMADAMENTE A LA LONGITUD DE LA REGLETA DORSAL QUE SOBRESALE CON SUS EXTREMOS DE LOS PARES DE GARRAS EXTERIORES."
+        },
+        "version": 0
+    }
+]

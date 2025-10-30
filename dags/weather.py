@@ -21,7 +21,7 @@ HOURLY = [
 ]
 BUCKET = "weather"
 
-default_args = { "retries": 10, "retry_delay": timedelta(seconds=15) }
+default_args = { "retries": 5, "retry_delay": timedelta(seconds=15) }
 
 @dag(
     dag_id="weather",
